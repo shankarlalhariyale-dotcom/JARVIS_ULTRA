@@ -1,0 +1,141 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JARVIS ULTRA</title>
+<style>
+:root{--c:#42dfff;--bg:#030912;--panel:rgba(7,23,39,.82)}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at center,#0b2639 0%,#030912 65%,#010307 100%);color:#d9f8ff;font-family:Arial,sans-serif;min-height:100vh}
+header{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid #17465c;letter-spacing:3px}
+.brand{font-size:21px;color:var(--c);font-weight:bold;text-shadow:0 0 12px var(--c)}
+.status{font-size:10px;color:#65ffc0;letter-spacing:1px}
+main{max-width:900px;margin:auto;padding:18px}
+h1{text-align:center;font-size:clamp(25px,6vw,42px);letter-spacing:8px;margin:18px 0 4px;color:var(--c);text-shadow:0 0 20px #138fb8}
+.sub{text-align:center;color:#6999ad;font-size:10px;letter-spacing:4px}
+.reactor{height:240px;display:grid;place-items:center;position:relative}
+.ring{position:absolute;width:190px;height:190px;border:1px solid #35dfff;border-radius:50%;box-shadow:0 0 25px #087ba0,inset 0 0 24px #087ba0;animation:spin 12s linear infinite}
+.ring:before,.ring:after{content:"";position:absolute;inset:15px;border:1px dashed #4bdfff;border-radius:50%}
+.ring:after{inset:34px;border-style:solid;border-color:#146581}
+.core{width:95px;height:95px;border:2px solid var(--c);border-radius:50%;background:radial-gradient(circle,#b5faff 0%,#36c8ed 12%,#07517b 40%,#061522 70%);box-shadow:0 0 35px var(--c),0 0 80px #075c89;animation:pulse 2s ease-in-out infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{50%{transform:scale(1.08);box-shadow:0 0 55px var(--c)}}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.metric,.chatbox,.tools{border:1px solid #16455b;background:var(--panel);padding:13px;border-radius:8px}
+.metric{text-align:center;font-size:10px;color:#76a7bb;letter-spacing:1px}
+.metric b{display:block;color:var(--c);font-size:14px;margin-top:9px}
+.section{font-size:11px;letter-spacing:3px;color:var(--c);margin:20px 0 10px}
+.chatbox{min-height:180px;max-height:280px;overflow:auto}
+.msg{font-size:14px;line-height:1.6;margin:8px 0;overflow-wrap:anywhere}
+.msg .who{color:var(--c);font-size:10px;letter-spacing:2px;display:block;margin-bottom:3px}
+.inputrow{display:flex;gap:8px;margin-top:10px}
+input{min-width:0;flex:1;background:#061421;border:1px solid #24566b;border-radius:5px;padding:13px;color:white;font-size:14px;outline:none}
+button{background:#0b293b;border:1px solid #35c8e8;color:#9ceeff;border-radius:5px;padding:11px 13px;font-weight:bold;cursor:pointer}
+button:active{background:#14506a}
+.tools{display:flex;gap:9px;flex-wrap:wrap}
+.tools button{flex:1}
+footer{text-align:center;color:#436b7d;font-size:10px;letter-spacing:2px;padding:22px}
+body.orange{--c:#ffb74a;--panel:rgba(35,20,7,.88);background:radial-gradient(ellipse at center,#30200c,#090602 70%)}
+body.orange .ring{border-color:var(--c);box-shadow:0 0 25px #a75b0c,inset 0 0 24px #a75b0c}
+body.orange .core{border-color:var(--c);box-shadow:0 0 35px var(--c)}
+@media(max-width:480px){header{padding:15px 12px}.brand{font-size:16px}main{padding:12px}.reactor{height:220px}.ring{width:170px;height:170px}.core{width:80px;height:80px}.inputrow{flex-wrap:wrap}.inputrow input{flex-basis:100%}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">J.A.R.V.I.S.</div>
+  <div class="status" id="status">● SYSTEM ONLINE</div>
+</header>
+<main>
+  <h1>JARVIS ULTRA</h1>
+  <div class="sub">PERSONAL AI INTERFACE</div>
+  <div class="reactor"><div class="ring"></div><div class="core"></div></div>
+  <div class="metrics">
+    <div class="metric">SYSTEM<b id="sys">READY</b></div>
+    <div class="metric">VOICE<b id="voiceState">STANDBY</b></div>
+    <div class="metric">MODE<b id="mode">NORMAL</b></div>
+  </div>
+  <div class="section"> // NEURAL COMMUNICATION</div>
+  <div class="chatbox" id="chat">
+    <div class="msg"><span class="who">JARVIS</span>Good day, Sir. JARVIS interface is ready. Type a message or activate the microphone.</div>
+  </div>
+  <div class="inputrow">
+    <input id="prompt" placeholder="Talk to JARVIS..." autocomplete="off">
+    <button id="send">SEND ↗</button>
+    <button id="mic">🎙 MIC</button>
+  </div>
+  <div class="section">// CONTROL SYSTEMS</div>
+  <div class="tools">
+    <button id="speak">🔊 VOICE ON</button>
+    <button id="analysis">◈ ANALYSIS MODE</button>
+    <button id="search">⌕ WEB SEARCH</button>
+    <button id="clear">↺ CLEAR CHAT</button>
+  </div>
+</main>
+<footer>JARVIS ULTRA · PERSONAL INTERFACE · INITIAL BUILD</footer>
+<script>
+const $=id=>document.getElementById(id);
+let voiceOn=true,analysisOn=false;
+function addMessage(who,text){
+ const el=document.createElement('div');el.className='msg';
+ const name=document.createElement('span');name.className='who';name.textContent=who;
+ const body=document.createElement('span');body.textContent=text;
+ el.append(name,body);$('chat').appendChild(el);$('chat').scrollTop=$('chat').scrollHeight;
+}
+function say(text){
+ if(!voiceOn||!('speechSynthesis'in window))return;
+ speechSynthesis.cancel();
+ const u=new SpeechSynthesisUtterance(text);
+ u.lang='en-IN';u.rate=0.94;u.pitch=0.82;
+ const voices=speechSynthesis.getVoices();
+ const male=voices.find(v=>/male|david|mark|daniel/i.test(v.name)&&/en/i.test(v.lang));
+ if(male)u.voice=male;
+ speechSynthesis.speak(u);
+}
+function respond(text){
+ const q=text.trim();if(!q)return;
+ addMessage('YOU',q);$('prompt').value='';
+ const lower=q.toLowerCase();
+ let answer='I am your JARVIS interface. The AI engine is not connected yet, Sir. This build can accept voice input where your browser supports it, speak replies, and open web searches.';
+ if(/hello|hi\b|namaste|kaise ho/.test(lower))answer='Hello, Sir. Main taiyaar hoon. Aap kaise hain?';
+ else if(/your name|tumhara naam|who are you/.test(lower))answer='I am JARVIS ULTRA, your personal assistant interface, Sir.';
+ else if(/time|samay|kitne baje/.test(lower))answer='The current time on this device is '+new Date().toLocaleTimeString()+', Sir.';
+ else if(/date|tareekh|aaj kya din/.test(lower))answer='Today is '+new Date().toLocaleDateString('en-IN',{dateStyle:'full'})+', Sir.';
+ else if(/search|internet|online|google|khoj/.test(lower))answer='Web search is ready to open. Press the WEB SEARCH button or ask me to search for a specific topic.';
+ addMessage('JARVIS',answer);say(answer);
+}
+$('send').onclick=()=>respond($('prompt').value);
+$('prompt').addEventListener('keydown',e=>{if(e.key==='Enter')respond($('prompt').value)});
+$('speak').onclick=()=>{
+ voiceOn=!voiceOn;$('speak').textContent=voiceOn?'🔊 VOICE ON':'🔇 VOICE OFF';
+ if(!voiceOn&&'speechSynthesis'in window)speechSynthesis.cancel();
+ if(voiceOn)say('Voice system activated, Sir.');
+};
+$('analysis').onclick=()=>{
+ analysisOn=!analysisOn;document.body.classList.toggle('orange',analysisOn);
+ $('mode').textContent=analysisOn?'ANALYSIS':'NORMAL';
+ $('analysis').textContent=analysisOn?'◈ NORMAL MODE':'◈ ANALYSIS MODE';
+ addMessage('JARVIS',analysisOn?'Analysis mode activated, Sir.':'Returning to normal mode, Sir.');
+};
+$('search').onclick=()=>{
+ const q=$('prompt').value.trim();
+ if(!q){addMessage('JARVIS','Type your search topic in the message box first, Sir.');return}
+ window.open('https://www.google.com/search?q='+encodeURIComponent(q),'_blank');
+};
+$('clear').onclick=()=>{$('chat').replaceChildren();addMessage('JARVIS','Chat cleared, Sir.');};
+$('mic').onclick=()=>{
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){addMessage('JARVIS','Voice recognition is not supported in this browser. Try Chrome and allow microphone permission.');return}
+ const rec=new SR();rec.lang='hi-IN';rec.interimResults=false;
+ $('voiceState').textContent='LISTENING';$('status').textContent='● LISTENING';
+ rec.onresult=e=>{$('prompt').value=e.results[0][0].transcript;respond($('prompt').value)};
+ rec.onerror=()=>addMessage('JARVIS','Microphone unavailable. Check browser permission and try again.');
+ rec.onend=()=>{$('voiceState').textContent='STANDBY';$('status').textContent='● SYSTEM ONLINE'};
+ try{rec.start()}catch(e){addMessage('JARVIS','Please wait a moment and try the microphone again.')}
+};
+if('speechSynthesis'in window)speechSynthesis.getVoices();
+</script>
+</body>
+</html>
